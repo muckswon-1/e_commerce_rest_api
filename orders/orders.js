@@ -1,10 +1,10 @@
 const ordersRouter = require('express').Router();
 const ordersService = require('./service');
 
-ordersRouter.get('/',ordersService.getAllOrders);
-ordersRouter.post('/',ordersService.createNewOrder);
-ordersRouter.put('/:id',ordersService.updateOrder);
-ordersRouter.delete('/:id',ordersService.deleteOrder);
+ordersRouter.get('/orders',ordersService.getAllOrders);
+ordersRouter.post('/orders/newOrder',ordersService.createNewOrder);
+ordersRouter.put('/orders/updateOrder/:id',ordersService.updateOrder);
+ordersRouter.delete('/orders/deleteOrder/:id',ordersService.deleteOrder);
 
 
 module.exports = {ordersRouter};

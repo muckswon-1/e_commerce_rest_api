@@ -1,11 +1,12 @@
 const { db } = require("../config/database/db");
-const {v4: generateOrderId} = require('uuid');
+const { generateId } = require("../utils");
+
 
 
 //get all orders
 const getAllOrders =  async (req,res) => {
     const sqlStr = "SELECT * FROM orders";
-   const client = await  db.connect();
+    const client = await  db.connect();
 
    try {
 
@@ -23,7 +24,7 @@ const getAllOrders =  async (req,res) => {
 
 //create a new order
 const createNewOrder = async (req,res) => {
-    const newOrderId = generateOrderId();
+    const newOrderId = generateId();
     const {name, state} = req.body;
    
     const sqlStr = "INSERT INTO orders(id, name, state) VALUES($1, $2, $3)";
@@ -42,7 +43,7 @@ const createNewOrder = async (req,res) => {
     }
  }
 
- //update order statud
+ //update order status
  const updateOrder = async (req,res) => {
     const id = req.params.id;
     const {state} = req.body;
