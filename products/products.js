@@ -3,8 +3,8 @@ const productsService = require('./service')
 
 
 productsRouter.get('/products',productsService.getAllProducts);
-productsRouter.post('/products/newProduct',productsService.createNewProduct);
-productsRouter.put('/products/updateProduct/:id',productsService.updateProduct);
+productsRouter.post('/products',productsService.createNewProduct);
+productsRouter.put('/products/:id',productsService.updateProduct);
 productsRouter.delete('/products/deleteProduct/:id',productsService.deleteProduct);
 
 

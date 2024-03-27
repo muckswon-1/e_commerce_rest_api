@@ -1,91 +1,39 @@
 const { db } = require("../config/database/db");
-const { generateId } = require("../utils");
+const { getAllTableItems, insertIntoTable, deleteFromTable, updateById } = require("../config/database/service");
+const { generateId, selectAllItemsFeeback, createNewItemFeedback, deleteItemFeedback, updateItemFeedback } = require("../utils");
 
 
 
 //get all orders
 const getAllOrders =  async (req,res) => {
-    const sqlStr = "SELECT * FROM orders";
-    const client = await  db.connect();
-
-   try {
-
-    const result = await client.query(sqlStr);
-    res.json({orders: result.rows});
-
-   } catch (error) {
-      console.log(error);
-      res.status(500).json('An error occured on the server')
-   }finally {
-    client.release();
-   }
+    const queryResult = await  getAllTableItems('orders');
+    selectAllItemsFeeback(req,res,queryResult);
 
 }
 
 //create a new order
 const createNewOrder = async (req,res) => {
     const newOrderId = generateId();
-    const {name, state} = req.body;
-   
-    const sqlStr = "INSERT INTO orders(id, name, state) VALUES($1, $2, $3)";
-    const client = await db.connect();
-    try {
-        const result = await client.query(sqlStr,[newOrderId,name,state]);
-        if(result.rowCount > 0){
-            res.status(201).json('Order created successfully.');
-        }
-        
-    } catch (error) {
-        console.log(error);
-        res.status(500).json('An error occured on the server');
-    }finally {
-        client.release();
-    }
+    const newOrder = req.body;
+    newOrder.id = newOrderId;
+    const queryResult = await insertIntoTable('orders');
+    createNewItemFeedback(req,res,queryResult);
  }
 
  //update order status
  const updateOrder = async (req,res) => {
-    const id = req.params.id;
-    const {state} = req.body;
+    const {id} = req.params;
+    const orderUpdate = req.body;
+    const queryResult = updateById('orders',orderUpdate,'id',id);
+    updateItemFeedback(req,res,queryResult);
 
-    const sqlStr = "UPDATE orders SET state=$1 WHERE id=$2";
-    const client = await db.connect();
-
-    try {
-        const result = await client.query(sqlStr,[state,id]);
-        if(result.rowCount > 0) {
-            res.status(204).json('Order state updated successfully')
-        }else {
-            res.status(400).json('Order with that ID does not exist.');
-        }
-    } catch (error) {
-        console.log(error);
-        res.status(500).json('An error occured on the server')
-    }finally{
-        client.release();
-    }
  }
 
  //delete an order
  const deleteOrder = async (req,res) => {
     const id = req.params.id;
-    const sqlStr = "DELETE FROM orders WHERE id=$1";
-    const client = await db.connect();
-
-    try {
-        const result = await client.query(sqlStr,[id]);
-        if(result.rowCount > 0) {
-            res.status(204).json('Order successfully deleted');
-        }else {
-            res.status(400).json('Order with that ID does not exist.');
-        }
-        
-    } catch (error) {
-        console.log(error);
-        res.status(500).json('An error occured on the server')
-    }finally {
-        client.release();
-    }
+    const queryResult = deleteFromTable('orders',id);
+    deleteItemFeedback(req,res,queryResult)
 
  }
 

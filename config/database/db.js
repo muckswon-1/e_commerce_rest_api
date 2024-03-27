@@ -50,37 +50,73 @@ const initDatbase = async() => {
 
     try {
 
+        //create users table
+        const createUsersTableQuery = `
+        CREATE TABLE IF NOT EXISTS users(
+           id UUID NOT NULL UNIQUE PRIMARY KEY,
+           username VARCHAR(255) NOT NULL UNIQUE,
+           email VARCHAR(255) NOT NULL UNIQUE,
+           password TEXT NOT NULL
+        )
+       `;
+       await client.query(createUsersTableQuery);
+       console.log('Users table created successfully (if it didn\'t exist).');
+
+         // create products table
+         const createProductsTableQuery = `
+         CREATE TABLE IF NOT EXISTS products(
+             id UUID NOT NULL UNIQUE PRIMARY KEY,
+             name VARCHAR(255) NOT NULL,
+             unit_price REAL NOT NULL,
+             quantity INTEGER NOT NULL)
+         `;
+         await client.query(createProductsTableQuery);
+         console.log('Products table created successfully (if it didn\'t exist).')
+
+
         // create orders table
         const createOrdersTableQuery = `
         CREATE TABLE IF NOT EXISTS orders(
-            id UUID NOT NULL UNIQUE PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            state VARCHAR(10) NOT NULL)
+            id UUID PRIMARY KEY,
+            user_id UUID REFERENCES users(id) NOT NULL,
+            shipping_address TEXT,
+            payment_method VARCHAR(50),
+            payment_details JSONB,
+            state VARCHAR(50) DEFAULT 'pending',
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            shipped_at TIMESTAMP WITH TIME ZONE,
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP)
+            
         `;
         await client.query(createOrdersTableQuery);
-        console.log('Orders table created successfully (if it didn\'t exist).');
+        console.log('Orders table created successfully (if it didn\'t exist).'); 
 
-          // create products table
-        const createProductsTableQuery = `
-        CREATE TABLE IF NOT EXISTS products(
-            id UUID NOT NULL UNIQUE PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            price REAL NOT NULL,
-            quantity INTEGER NOT NULL)
-        `;
-        await client.query(createProductsTableQuery);
-        console.log('Products table created successfully (if it didn\'t exist).')
 
-        const createUsersTableQuery = `
-         CREATE TABLE IF NOT EXISTS users(
-            id UUID NOT NULL UNIQUE PRIMARY KEY,
-            username VARCHAR(255) NOT NULL UNIQUE,
-            email VARCHAR(255) NOT NULL UNIQUE,
-            password TEXT NOT NULL
-         )
+        // create order_items table
+        const createOrderItemsTableQuery = `
+            CREATE TABLE IF NOT EXISTS order_items (
+                id UUID PRIMARY KEY,
+                order_id UUID REFERENCES orders(id) NOT NULL,
+                quantity INT NOT NULL,
+                unit_price DECIMAL(10,2) NOT NULL,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            )
+        `
+        await client.query(createOrderItemsTableQuery);
+        console.log('Order_items table created successfully (if it didn\'t exist).');
+
+        // create a cat table
+        const createCartTableQuery = `
+          CREATE TABLE IF NOT EXISTS cart(
+            id UUID PRIMARY KEY,
+            user_id UUID REFERENCES users(id) NOT NULL,
+            product_id UUID REFERENCES products(id) NOT NULL,
+            quantity INT NOT NULL DEFAULT 1,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          )
         `;
-        await client.query(createUsersTableQuery);
-        console.log('Users table created successfully (if it didn\'t exist).')
+        await client.query(createCartTableQuery);
+        console.log('cart table created successfully (if it didn\'t exist).');
 
 
     } catch (error) {

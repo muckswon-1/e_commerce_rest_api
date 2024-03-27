@@ -1,7 +1,29 @@
 const { db } = require("../config/database/db");
-const { generateId, hashPassword } = require("../utils");
+const { generateId, hashPassword, genToken } = require("../utils");
 
 
+
+//user login
+const loginUser = async (req,res) => {
+
+    try {
+        if(!req.user){
+            res.status(401).json('Incorrect username or password')
+        }
+
+        const user = {
+            id: req.user.id,
+            username: req.user.username,
+            email: req.user.email
+        }
+        const token = genToken(req.user);
+        res.json({user,token})
+    } catch (error) {
+        console.error(error);
+        res.status(500).json('Internal server error')
+    }
+
+}
 
 //create a new user 
 const registerNewUser = async (req,res) => {
@@ -29,10 +51,25 @@ const registerNewUser = async (req,res) => {
     }
 }
 
+//user logout
+const logoutUser = (req,res) => {
+    req.session.destroy(err => {
+        if(err){
+            console.error(err)
+            return res.status(500).json('Error loggin out')
+        }
+
+        res.json('Successfully logged out')
+    })
+
+}
+
 
 
 module.exports = {
     registerNewUser,
+    loginUser,
+    logoutUser
    
 }
 

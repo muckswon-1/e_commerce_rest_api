@@ -11,6 +11,8 @@ const usersRouter = require('./users/users');
 const authRouter = require('./auth/auth');
 const passport = require('passport');
 const session = require('express-session');
+const cartRouter = require('./cart/cart');
+const checkoutRouter = require('./checkout/checkout');
 
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
@@ -39,6 +41,8 @@ app.use('/',ordersRouter);
 app.use('/',productsRouter);
 app.use('/',usersRouter);
 app.use('/',authRouter);
+app.use('/',cartRouter);
+app.use('/',checkoutRouter);
 
 
 app.listen(PORT,() => {
