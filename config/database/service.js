@@ -100,6 +100,34 @@ const insertIntoTable = async (tableName, data) => {
 }
 
 
+//selet by id
+const selectById = async  (tablename, id, idColumnName) => {
+    const sqlQuery = `SELECT * FROM ${tablename} WHERE ${idColumnName}=$1`;
+
+    let client;
+    try {
+         client = await db.connect();
+    } catch (error) {
+        console.error('An error occured while attempting to connect to the database.',error.stack);
+        return 500
+    }
+
+    try {
+        const result = await  client.query(sqlQuery,[id]);
+        if(result.rowCount === 0){
+            return 404
+        }else {
+            return result;
+        }
+        
+    } catch (error) {
+        console.error('An error occured while attempting query the  database.',error.stack);
+        return 400
+    }finally {
+        client.release();
+    }
+}
+
 
 //delete from a table 
 const deleteFromTable =  async (tablename, id) => {
@@ -133,5 +161,6 @@ module.exports = {
     updateById,
     getAllTableItems,
     insertIntoTable,
-    deleteFromTable
+    deleteFromTable,
+    selectById
 }

@@ -121,6 +121,50 @@ const deleteItemFeedback = (req,res,queryResult) => {
     }
 }
 
+//select by ID feedback 
+const selectByIdFeedback = (req,res,queryResult) => {
+    if(queryResult == 500){
+        res.status(500).json('An error occured on the server, please try again')
+    }
+
+    if(queryResult === 400) {
+        res.status(400).json('There was a problem querying the database')
+    }
+
+    if(queryResult === 404) {
+        res.status(404).json('Item with that id was not fond')
+    }
+
+    if(queryResult.rows){
+        res.json(queryResult.rows);
+    }
+}
+
+//calclutate total amount
+const calcuclateTotal = (obj1,obj2) => {
+    const totals = [];
+    for(const item of obj1) {
+        let  itemTotal = 0;
+        for(const entry of obj2){
+            if(entry.id === item.product_id){
+                itemTotal = entry.unit_price * item.quantity;
+                totals.push(itemTotal);
+            }
+        }
+        
+    }
+
+    return totals;
+}
+
+//get value of a key in an object given an array and the key
+const getObjectValue = (array,key,id,idName) => {
+    
+   const item = array.find(theItem => theItem[idName] === id)
+
+    return item[key];
+ }
+
 
 module.exports = {
     generateId,
@@ -130,5 +174,8 @@ module.exports = {
     selectAllItemsFeeback,
     createNewItemFeedback,
     updateItemFeedback,
-    deleteItemFeedback
+    deleteItemFeedback,
+    selectByIdFeedback,
+    calcuclateTotal,
+    getObjectValue
 }
