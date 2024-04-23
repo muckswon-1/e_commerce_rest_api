@@ -1,11 +1,12 @@
-const productsRouter = require('express').Router();
-const productsService = require('./service')
+const productsRouter = require("express").Router();
+const productsService = require("./service");
 
-
-productsRouter.get('/products',productsService.getAllProducts);
-productsRouter.post('/products',productsService.createNewProduct);
-productsRouter.put('/products/:id',productsService.updateProduct);
-productsRouter.delete('/products/deleteProduct/:id',productsService.deleteProduct);
-
+productsRouter.get("/products", productsService.getAllProducts);
+productsRouter.post("/products", productsService.createNewProduct);
+productsRouter.put("/products/:id", productsService.updateProduct);
+productsRouter.delete(
+  "/products/deleteProduct/:id",
+  productsService.deleteProduct,
+);
 
 module.exports = productsRouter;
