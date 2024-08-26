@@ -21,7 +21,8 @@ const validate = async (username, password, done) => {
     if (result.rowCount > 0) {
       const user = result.rows[0];
 
-      if (!isValidPassword(password, user.password)) {
+      const passwordIsValid = await isValidPassword(password, user.password)
+      if (!passwordIsValid) {
         return done(null, false, { message: "Incorrect username or password" });
       }
 

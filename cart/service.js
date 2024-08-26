@@ -26,6 +26,8 @@ const getAllCartItems = async (req, res) => {
 const createNewCartItem = async (req, res) => {
   const cartItem = req.body;
 
+  console.log(cartItem);
+
   let client;
   try {
     client = await db.connect();
@@ -57,7 +59,7 @@ const createNewCartItem = async (req, res) => {
 //delete item from cart if item count is 0
 //decrement item count by 1 if item count is greator than 0
 const deleteFromCart = async (req, res) => {
-  const { user_id, product_id } = req.params;
+  const { user_id, product_id } = req.body;
 
   let client;
   try {
@@ -103,9 +105,17 @@ const getUserCartItemsById = async (req, res) => {
 //delete an entry fro cart
 const deleteCartEntry = async (req, res) => {
   const { id } = req.params;
-  const queryResult = await deleteFromTable("cart", id);
+  const queryResult = await deleteFromTable("cart","id", id);
   deleteItemFeedback(req, res, queryResult);
 };
+
+
+// delete entire user cart
+const deleteCart = async (req,res) => {
+  const {user_id} = req.params
+  const queryResult = await deleteFromTable("cart","user_id",user_id);
+  deleteItemFeedback(req,res,queryResult)
+}
 
 module.exports = {
   getAllCartItems,
@@ -113,4 +123,5 @@ module.exports = {
   deleteFromCart,
   deleteCartEntry,
   getUserCartItemsById,
+  deleteCart
 };

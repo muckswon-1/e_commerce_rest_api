@@ -9,7 +9,7 @@ const config = {
   database: process.env.DB_DATABASE,
 };
 
-console.log(config);
+
 
 const db = new Pool(config);
 

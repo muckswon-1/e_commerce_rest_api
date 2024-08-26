@@ -147,8 +147,8 @@ const selectById = async (tablename, id, idColumnName) => {
 };
 
 //delete from a table
-const deleteFromTable = async (tablename, id) => {
-  const sqlQuery = `DELETE FROM ${tablename} WHERE id=$1`;
+const deleteFromTable = async (tablename, idColumnName,id) => {
+  const sqlQuery = `DELETE FROM ${tablename} WHERE ${idColumnName}=$1`;
 
   let client;
   try {

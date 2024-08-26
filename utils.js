@@ -25,26 +25,33 @@ const isValidPassword = async (password, secretPassword) => {
   return bcrypt.compareSync(password, secretPassword);
 };
 
+const generateAccessToken = (payload) => {
+  const secret = process.env.SESSION_SECRET;
+  return   jwt.sign(payload, secret, {expiresIn: '1m'})
+}
+
 //geneate token
-const genToken = (payload) => {
-  const secret = process.env.JWT_SECRET;
-  return jwt.sign(payload, secret, { expiresIn: "1h" });
+const generateRefreshToken = (payload) => {
+   const secret = process.env.SESSION_SECRET;
+   return  jwt.sign(payload,secret,{expiresIn: '1d'} );
 };
 
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json("Unauthorized");
+   return res.status(500).json('Bad token format')
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.SESSION_SECRET);
     req.user = decoded;
     next();
+
   } catch (error) {
-    return res.status(401).json("Invalid token");
+  
+    return res.status(401).json("Invalid or expired access token")
   }
 };
 
@@ -163,7 +170,8 @@ module.exports = {
   generateId,
   hashPassword,
   isValidPassword,
-  genToken,
+  generateAccessToken,
+  generateRefreshToken,
   selectAllItemsFeeback,
   createNewItemFeedback,
   updateItemFeedback,
@@ -171,4 +179,5 @@ module.exports = {
   selectByIdFeedback,
   calcuclateTotal,
   getObjectValue,
+  verifyToken
 };

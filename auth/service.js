@@ -3,65 +3,89 @@ const { selectById } = require("../config/database/service");
 const {
   generateId,
   hashPassword,
-  genToken,
   selectByIdFeedback,
+  generateAccessToken,
+  generateRefreshToken,
 } = require("../utils");
+const jwt = require('jsonwebtoken');
 
 //user login
 const loginUser = async (req, res) => {
   try {
-    if (!req.user) {
-      res.status(401).json("Incorrect username or password");
+    if (req.user) {
+      const user = {
+        id: req.user.id,
+        username: req.user.username,
+        email: req.user.email,
+      };
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user);
+
+      res.status(200).json({jwtToken: {accessToken, refreshToken}, userId: user.id});
+      
+    } else {
+      res.status(401).json('Incorrect username or password')
     }
 
-    const user = {
-      id: req.user.id,
-      username: req.user.username,
-      email: req.user.email,
-    };
-    const token = genToken(req.user);
-    res.json({ user, token });
+    
   } catch (error) {
-    console.error(error);
-    res.status(500).json("Internal server error");
+     console.error('Error while attempting to login')
+     res.status(500).json('An error occured on the server. Please try again.')
   }
 };
 
 //create a new user
 const registerNewUser = async (req, res) => {
   const { username, email, password } = req.body;
-  const secretPassword = await hashPassword(password);
-  console.log(secretPassword);
+
+  // hash password
+  let secretPassword;
+  try {
+    secretPassword = await hashPassword(password);
+  } catch (error) {
+    console.error('Error hashing password:', error);
+    return res.status(500).json('Internal server error while hashing password')
+  }
+   
+  
   const id = generateId();
   const sqlQuery =
     "INSERT INTO users(id,username,email,password) VALUES($1,$2,$3,$4)";
   let client;
   try {
     client = await db.connect();
-  } catch (error) {
-    console.error(
-      "An error occured while attempting to connect to the database.",
-      error.stack,
-    );
-    res.status(500).json("An error occured on the server please try again.");
-  }
-
-  try {
     const result = await client.query(sqlQuery, [
       id,
       username,
       email,
       secretPassword,
     ]);
-    if (result.rowCount > 0) res.json(true);
+
+    if (result.rowCount > 0) 
+    {
+      res.sendStatus(201);
+
+    } else {
+      console.error('No rows affected');
+      res.status(500).json("Failed to create new user.");
+    }
+
   } catch (error) {
-    console.error(
-      "An error occured while attempting to query the database.",
-      error.stack,
-    );
-    res.status(500).json("An error occured on the server please try again.");
+    console.error("Database query error:", error.message);
+    let errorMessage;
+    if(error.message.includes('duplicate key value violates unique constraint "users_username_key')){
+      errorMessage = 'Username already exists';
+    }
+
+    if(error.message.includes('duplicate key value violates unique constraint "users_email_key')){
+      errorMessage = 'Email already exists'
+    }
+    res.status(500).json(errorMessage);
   } finally {
-    client.release();
+    if(client){
+      client.release();
+    }
+    
   }
 };
 
@@ -84,9 +108,41 @@ const getUserById = async (req, res) => {
   selectByIdFeedback(req, res, queryResult);
 };
 
+const authorizeToken = async (req,res) => {
+  res.sendStatus(200);
+}
+
+const refreshTokenPath = async (req,res) => {
+  const incomingRefreshToken = req.body.refreshToken;
+
+  if(!incomingRefreshToken){
+    return res.status(401).json('Refresh token not found');
+  }
+
+  try {
+    const tokenSecret = process.env.SESSION_SECRET;
+
+    const decoded = jwt.verify(incomingRefreshToken, tokenSecret );
+    console.log('refresh decoded', decoded)
+    const user = decoded;
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    res.json({accessToken, refreshToken});
+    
+  } catch (error) {
+    res.status(401).json('Invalid refresh token.')
+  }
+
+}
+
+
 module.exports = {
   registerNewUser,
   loginUser,
   logoutUser,
   getUserById,
+  authorizeToken,
+  refreshTokenPath
 };

@@ -4,6 +4,7 @@ const {
   getAllTableItems,
   updateById,
   deleteFromTable,
+  selectById,
 } = require("../config/database/service");
 const {
   generateId,
@@ -11,6 +12,7 @@ const {
   selectAllItemsFeeback,
   updateItemFeedback,
   deleteItemFeedback,
+  selectByIdFeedback,
 } = require("../utils");
 
 //retrieve all products
@@ -43,9 +45,16 @@ const deleteProduct = async (req, res) => {
   deleteItemFeedback(req, res, queryResult);
 };
 
+const getProduct = async (req,res) => {
+  const {id} = req.params;
+  const queryResult = await selectById('products',id,'id');
+  selectByIdFeedback(req,res,queryResult)
+}
+
 module.exports = {
   getAllProducts,
   createNewProduct,
   updateProduct,
   deleteProduct,
+  getProduct
 };
